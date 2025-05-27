@@ -1,41 +1,93 @@
-<<<<<<< HEAD
-import { useState, useEffect } from 'react';
-import Head from 'next/head';
-import dynamic from 'next/dynamic';
+import { useState, useEffect } from "react";
+import Head from "next/head";
+import dynamic from "next/dynamic";
 
 const MapWithNoSSR = dynamic(
-  () => import('react-leaflet').then((mod) => {
-    const { MapContainer, TileLayer, Marker, Popup } = mod;
-    return function MapWrapper(props) {
-      return (
-        <MapContainer {...props}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          {props.children}
-        </MapContainer>
-      );
-    };
-  }),
+  () =>
+    import("react-leaflet").then((mod) => {
+      const { MapContainer, TileLayer, Marker, Popup } = mod;
+      return function MapWrapper(props) {
+        return (
+          <MapContainer {...props}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            {props.children}
+          </MapContainer>
+        );
+      };
+    }),
   { ssr: false }
 );
 
 const MarkerWithNoSSR = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
+  () => import("react-leaflet").then((mod) => mod.Marker),
   { ssr: false }
 );
 
 const PopupWithNoSSR = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Popup),
+  () => import("react-leaflet").then((mod) => mod.Popup),
   { ssr: false }
 );
 
 const DAEGU_UNIV = [35.8866, 128.7406];
 
+// ------------- 추가되거나 수정된 부분 ----------------------------------
+// 위도/경도 좌표 두 지점(lat1, lon1)과 (lat2, lon2) 사이의 거리(km)를 계산하는 함수
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // 지구 반지름 (단위: km)
+
+  // 위도, 경도 차이를 라디안으로 변환
+  const dLat = ((lat2 - lat1) * Math.PI) / 180; // 위도 차이 (라디안)
+  const dLon = ((lon2 - lon1) * Math.PI) / 180; // 경도 차이 (라디안)
+
+  // 하버사인 공식 적용
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) + // 위도 차에 대한 사인값 제곱
+    Math.cos((lat1 * Math.PI) / 180) * // 첫 번째 지점 위도 (라디안 변환 후 코사인)
+      Math.cos((lat2 * Math.PI) / 180) * // 두 번째 지점 위도 (라디안 변환 후 코사인)
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2); // 경도 차에 대한 사인값 제곱
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // 중심각 계산 (radians)
+
+  return R * c; // 거리 = 지구 반지름 * 중심각
+}
+
 export default function Home() {
   const [center, setCenter] = useState(DAEGU_UNIV);
   const [userLocation, setUserLocation] = useState(null);
+  const [stations, setStations] = useState([]);
+  const [filteredStations, setFilteredStations] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/stations")
+      .then((res) => res.json())
+      .then((data) => {
+        setStations(data);
+      })
+      .catch((err) => console.error("정류장 데이터를 불러오는 데 실패:", err));
+  }, []);
+
+  // 반경 내 정류장 필터링
+  useEffect(() => {
+    if (!stations.length) return;
+    const RADIUS_KM = 1; // 1km 반경
+
+    const filtered = stations.filter((station) => {
+      const lat = parseFloat(station["위도"]);
+      const lon = parseFloat(station["경도"]);
+      const distance = getDistanceFromLatLonInKm(
+        center[0],
+        center[1],
+        lat,
+        lon
+      );
+      return distance <= RADIUS_KM;
+    });
+    setFilteredStations(filtered);
+  }, [stations, center]);
 
   const requestLocation = () => {
     if (navigator.geolocation) {
@@ -61,144 +113,38 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>한국 지도 시뮬레이션</title>
+        <title>정류장 지도</title>
         <link
           rel="stylesheet"
           href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
         />
       </Head>
 
-      <div style={{ height: '100vh' }}>
-        <MapWithNoSSR center={center} zoom={15} style={{ height: '100%', width: '100%' }}>
+      <div style={{ height: "100vh" }}>
+        <MapWithNoSSR
+          center={center}
+          zoom={13}
+          style={{ height: "100%", width: "100%" }}
+        >
           {userLocation && (
             <MarkerWithNoSSR position={userLocation}>
               <PopupWithNoSSR>현재 위치</PopupWithNoSSR>
             </MarkerWithNoSSR>
           )}
-          {!userLocation && (
-            <MarkerWithNoSSR position={DAEGU_UNIV}>
-              <PopupWithNoSSR>대구대학교 (기본 위치)</PopupWithNoSSR>
+
+          {filteredStations.map((station, idx) => (
+            <MarkerWithNoSSR
+              key={idx}
+              position={[
+                parseFloat(station["위도"]),
+                parseFloat(station["경도"]),
+              ]}
+            >
+              <PopupWithNoSSR>{station["정류장명"]}</PopupWithNoSSR>
             </MarkerWithNoSSR>
-          )}
+          ))}
         </MapWithNoSSR>
       </div>
     </div>
-=======
-import Head from "next/head";
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
-import styles from "@/styles/Home.module.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export default function Home() {
-  return (
-    <>
-      <Head>
-        <title>Create Next App</title>
-        <meta name="description" content="Generated by create next app" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <div
-        className={`${styles.page} ${geistSans.variable} ${geistMono.variable}`}
-      >
-        <main className={styles.main}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js logo"
-            width={180}
-            height={38}
-            priority
-          />
-          <ol>
-            <li>
-              Get started by editing <code>pages/index.js</code>.
-            </li>
-            <li>Save and see your changes instantly.</li>
-          </ol>
-
-          <div className={styles.ctas}>
-            <a
-              className={styles.primary}
-              href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                className={styles.logo}
-                src="/vercel.svg"
-                alt="Vercel logomark"
-                width={20}
-                height={20}
-              />
-              Deploy now
-            </a>
-            <a
-              href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.secondary}
-            >
-              Read our docs
-            </a>
-          </div>
-        </main>
-        <footer className={styles.footer}>
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              aria-hidden
-              src="/file.svg"
-              alt="File icon"
-              width={16}
-              height={16}
-            />
-            Learn
-          </a>
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              aria-hidden
-              src="/window.svg"
-              alt="Window icon"
-              width={16}
-              height={16}
-            />
-            Examples
-          </a>
-          <a
-            href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              aria-hidden
-              src="/globe.svg"
-              alt="Globe icon"
-              width={16}
-              height={16}
-            />
-            Go to nextjs.org →
-          </a>
-        </footer>
-      </div>
-    </>
->>>>>>> feature
   );
 }
