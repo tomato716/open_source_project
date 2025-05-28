@@ -73,11 +73,11 @@ export default function Home() {
   // 반경 내 정류장 필터링
   useEffect(() => {
     if (!stations.length) return;
-    const RADIUS_KM = 1; // 1km 반경
+    const RADIUS_KM = 10; // 10km 반경
 
     const filtered = stations.filter((station) => {
-      const lat = parseFloat(station["위도"]);
-      const lon = parseFloat(station["경도"]);
+      const lat = parseFloat(station["yPos"]);
+      const lon = parseFloat(station["xPos"]);
       const distance = getDistanceFromLatLonInKm(
         center[0],
         center[1],
@@ -86,6 +86,7 @@ export default function Home() {
       );
       return distance <= RADIUS_KM;
     });
+
     setFilteredStations(filtered);
   }, [stations, center]);
 
@@ -132,17 +133,49 @@ export default function Home() {
             </MarkerWithNoSSR>
           )}
 
-          {filteredStations.map((station, idx) => (
-            <MarkerWithNoSSR
-              key={idx}
-              position={[
-                parseFloat(station["위도"]),
-                parseFloat(station["경도"]),
-              ]}
-            >
-              <PopupWithNoSSR>{station["정류장명"]}</PopupWithNoSSR>
-            </MarkerWithNoSSR>
-          ))}
+          {filteredStations.map((station, idx) => {
+            return (
+              <MarkerWithNoSSR
+                key={idx}
+                position={[
+                  parseFloat(station["yPos"]),
+                  parseFloat(station["xPos"]),
+                ]}
+                eventHandlers={{
+                  click: async () => {
+                    try {
+                      const now = new Date();
+                      const hour =
+                        now.getHours().toString().padStart(2, "0") + "시"; // 예: "06시"
+
+                      const res = await fetch(
+                        `/api/getOff_getOn_stats?stationId=${station["정류소ID"]}&hour=${hour}`
+                      );
+                      if (!res.ok) throw new Error("API 실패");
+
+                      const data = await res.json();
+
+                      alert(
+                        `${station["정류소명"]}, ${data.시간대} 기준\n승차: ${
+                          data.getOn ?? 0
+                        }명, 하차: ${data.getOff ?? 0}명\n
+                        2023-01-01부터 2023-12-31까지 누적합`
+                      );
+                    } catch (error) {
+                      console.error(error);
+                      alert("데이터를 가져오는 중 오류가 발생했습니다.");
+                    }
+                  },
+                }}
+              >
+                <PopupWithNoSSR>
+                  {station["정류소명"]}
+                  <br />
+                  (클릭 시 승하차 수 확인)
+                </PopupWithNoSSR>
+              </MarkerWithNoSSR>
+            );
+          })}
         </MapWithNoSSR>
       </div>
     </div>
