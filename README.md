@@ -1,40 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 시각화
+- ### chart.js
+<img src="https://github.com/user-attachments/assets/c1e4c1a8-0b1a-410f-8ce6-146d9a446a9b" width="400" height="250">
+<img src="https://github.com/user-attachments/assets/92e06e7c-7343-40bc-a75e-77295fc9ab8c" width="400" height="250">
 
-## Getting Started
+- ### openStreetMap
+<img src="https://github.com/user-attachments/assets/c3dca9de-09c0-4488-a745-13e6367c022a" width="400" height="250">
 
-First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+# 데이터셋
+- ### 파이썬 requests로 공공데이터 csv파일 생성
+<img src="https://github.com/user-attachments/assets/35275c35-1fe8-4f29-92a0-f9d981847dbf" width="400" height="250">
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- ### 공공데이터-파일데이터 파이썬으로 전처리
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+  - ### 전처리 전
+<br><img src="https://github.com/user-attachments/assets/8ef2539a-7d10-45cb-a738-3221048ba50a" width="800" height="250"><br>
+  - ### 전처리 후
+<br><img src="https://github.com/user-attachments/assets/c446b435-bb04-4ae7-af55-28257026d97d" width="800" height="250"><br>
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+# 배포
+[daegu-bus-stop-congestion](https://daegu-bus-stop-congestion.vercel.app/)
