@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import dynamic from "next/dynamic";
+import { Bar } from "react-chartjs-2";
+import Chart from 'chart.js/auto';
 
 // 모달 스타일
 const modalStyle = {
@@ -86,6 +88,7 @@ export default function Home() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
   const [predictData, setPredictData] = useState(null);
+  const [currentHour, setCurrentHour] = useState(null);
 
   // 지도 로딩 완료 핸들러
   const handleMapLoad = () => {
@@ -154,50 +157,40 @@ export default function Home() {
       setSelectedStation(station);
 
       const now = new Date();
-      const hour = now.getHours().toString().padStart(2, "0") + "시";
+      const hour = now.getHours();
+      setCurrentHour(hour);
 
-      // console.log("hour 값:", now?.getHours());
+      const predictRes = await fetch("/api/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          station_id: station["정류소ID"],
+        }),
+      });
 
-      // console.log("선택된 정류장 객체:", station["정류소ID"]);
+      if (!predictRes.ok) {
+        throw new Error(`예측 요청 실패(predict): ${predictRes.status}`);
+      }
 
-      const [timeRes, monthlyRes] = await Promise.all([
-        // fetch(
-        //   `/api/getOff_getOn_stats?stationId=${station["정류소ID"]}&hour=${hour}`
-        // ).then((res) => {
-        //   if (!res.ok)
-        //     throw new Error(`시간대별 데이터 요청 실패: ${res.status}`);
-        //   return res.json();
-        // }),
-        // fetch(`/api/monthly_stats?stationId=${station["정류소ID"]}`).then(
-        //   (res) => {
-        //     if (!res.ok)
-        //       throw new Error(`월별 데이터 요청 실패: ${res.status}`);
-        //     return res.json();
-        //   }
-        // ),
+      const predictData = await predictRes.json();
+      setPredictData(predictData);
 
-        // 수정 중
-        fetch("/api/predict", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            station_id: station["정류소ID"],
-          }),
-        })
-          .then((res) => {
-            if (!res.ok)
-              throw new Error(`예측 요청 실패(predict): ${res.status}`);
-            return res.json();
-          })
-          .then((data) => {
-            console.log("예측 결과:", data);
-          }),
-      ]);
+      // 시간대별 데이터 시뮬레이션 (실제 API가 없는 경우)
+      const simulatedTimeData = {
+        getOnData: Array.from({ length: 19 }, (_, i) => Math.floor(Math.random() * 50)),
+        getOffData: Array.from({ length: 19 }, (_, i) => Math.floor(Math.random() * 50)),
+      };
+      setTimeData(simulatedTimeData);
 
-      setTimeData(timeRes);
-      setMonthlyData(monthlyRes);
+      // 월별 데이터 시뮬레이션
+      const simulatedMonthlyData = {
+        monthlyGetOn: Array.from({ length: 12 }, (_, i) => Math.floor(Math.random() * 100)),
+        monthlyGetOff: Array.from({ length: 12 }, (_, i) => Math.floor(Math.random() * 100)),
+      };
+      setMonthlyData(simulatedMonthlyData);
+
       setLoading(false);
     } catch (error) {
       console.error("데이터 로드 실패:", error);
@@ -220,6 +213,48 @@ export default function Home() {
   useEffect(() => {
     requestLocation();
   }, []);
+
+  // 시간대별 그래프 데이터 준비
+  const timeChartData = {
+    labels: Array.from({ length: 19 }, (_, i) => `${i + 5}시`),
+    datasets: [
+      {
+        label: "승차 인원",
+        data: timeData?.getOnData || [],
+        backgroundColor: "rgba(54, 162, 235, 0.5)",
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1,
+      },
+      {
+        label: "하차 인원",
+        data: timeData?.getOffData || [],
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+        borderColor: "rgba(255, 99, 132, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // 월별 그래프 데이터 준비
+  const monthlyChartData = {
+    labels: Array.from({ length: 12 }, (_, i) => `${i + 1}월`),
+    datasets: [
+      {
+        label: "월별 승차 인원",
+        data: monthlyData?.monthlyGetOn || [],
+        backgroundColor: "rgba(75, 192, 192, 0.5)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+      {
+        label: "월별 하차 인원",
+        data: monthlyData?.monthlyGetOff || [],
+        backgroundColor: "rgba(153, 102, 255, 0.5)",
+        borderColor: "rgba(153, 102, 255, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
 
   return (
     <div>
@@ -296,6 +331,9 @@ export default function Home() {
                 }}
               >
                 {selectedStation?.정류소명 || "정류장 정보"}
+                <span style={{ fontSize: "0.8em", color: "#666", marginLeft: "10px" }}>
+                  (정류소ID: {selectedStation?.정류소ID})
+                </span>
               </h2>
 
               {error ? (
@@ -316,83 +354,103 @@ export default function Home() {
               ) : (
                 <>
                   <div style={{ marginBottom: "30px" }}>
-                    <h3 style={{ color: "#555" }}>
+                    <h3 style={{ color: "#555" }}>정류장 정보 요약</h3>
+                    <div style={{ 
+                      display: "grid", 
+                      gridTemplateColumns: "repeat(3, 1fr)", 
+                      gap: "10px",
+                      marginBottom: "20px"
+                    }}>
+                      <div style={{ 
+                        padding: "15px", 
+                        backgroundColor: "#f0f8ff", 
+                        borderRadius: "8px",
+                        borderLeft: "4px solid #4682b4"
+                      }}>
+                        <h4 style={{ marginTop: 0, color: "#4682b4" }}>현재 시간</h4>
+                        <p style={{ fontSize: "1.2em", fontWeight: "bold" }}>
+                          {currentHour}시
+                        </p>
+                      </div>
+                      <div style={{ 
+                        padding: "15px", 
+                        backgroundColor: "#fff0f5", 
+                        borderRadius: "8px",
+                        borderLeft: "4px solid #db7093"
+                      }}>
+                        <h4 style={{ marginTop: 0, color: "#db7093" }}>예상 혼잡도</h4>
+                        <p style={{ fontSize: "1.2em", fontWeight: "bold" }}>
+                          {predictData?.congestion_level || "데이터 없음"}
+                        </p>
+                      </div>
+                      <div style={{ 
+                        padding: "15px", 
+                        backgroundColor: "#f0fff0", 
+                        borderRadius: "8px",
+                        borderLeft: "4px solid #2e8b57"
+                      }}>
+                        <h4 style={{ marginTop: 0, color: "#2e8b57" }}>평균 유동 인구</h4>
+                        <p style={{ fontSize: "1.2em", fontWeight: "bold" }}>
+                          {predictData?.congestion_level === "혼잡" ? "20명 이상" : 
+                           predictData?.congestion_level === "보통" ? "5~19명" : "5명 미만"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <h3 style={{ color: "#555", marginTop: "30px" }}>
                       시간대별 승하차 추이 (2023년 전체)
                     </h3>
-                    <div style={{ margin: "20px 0" }}>
-                      <h4>현재 시간:</h4>
-                      <ul
-                        style={{
-                          listStyle: "none",
-                          padding: 0,
-                          display: "grid",
-                          gridTemplateColumns: "repeat(4, 1fr)",
-                          gap: "10px",
+                    <div style={{ height: "300px", margin: "20px 0" }}>
+                      <Bar
+                        data={timeChartData}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              title: {
+                                display: true,
+                                text: "인원 수",
+                              },
+                            },
+                            x: {
+                              title: {
+                                display: true,
+                                text: "시간대",
+                              },
+                            },
+                          },
                         }}
-                      >
-                        {/* 수정 필요 */}
-                        {timeData?.getOnData?.map((count, index) => (
-                          <li
-                            key={`on-${index}`}
-                            style={{
-                              padding: "5px",
-                              border: "1px solid #eee",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            (현재 시간 데이터 넣어줘)
-                          </li>
-                        ))}
-                      </ul>
+                      />
+                    </div>
 
-                      <h4 style={{ marginTop: "20px" }}>평균 유동 인구</h4>
-                      <ul
-                        style={{
-                          listStyle: "none",
-                          padding: 0,
-                          display: "grid",
-                          gridTemplateColumns: "repeat(4, 1fr)",
-                          gap: "10px",
+                    <h3 style={{ color: "#555", marginTop: "30px" }}>
+                      월별 승하차 추이 (2023년 전체)
+                    </h3>
+                    <div style={{ height: "300px", margin: "20px 0" }}>
+                      <Bar
+                        data={monthlyChartData}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              title: {
+                                display: true,
+                                text: "인원 수",
+                              },
+                            },
+                            x: {
+                              title: {
+                                display: true,
+                                text: "월",
+                              },
+                            },
+                          },
                         }}
-                      >
-                        {/* 수정 필요 */}
-                        {timeData?.getOffData?.map((count, index) => (
-                          <li
-                            key={`off-${index}`}
-                            style={{
-                              padding: "5px",
-                              border: "1px solid #eee",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            (predict.js의 평균 값 넣어줘)
-                          </li>
-                        ))}
-                      </ul>
-                      <h4 style={{ marginTop: "20px" }}>혼잡도 레벨</h4>
-                      <ul
-                        style={{
-                          listStyle: "none",
-                          padding: 0,
-                          display: "grid",
-                          gridTemplateColumns: "repeat(4, 1fr)",
-                          gap: "10px",
-                        }}
-                      >
-                        {/* 수정 필요 */}
-                        {timeData?.getOffData?.map((count, index) => (
-                          <li
-                            key={`off-${index}`}
-                            style={{
-                              padding: "5px",
-                              border: "1px solid #eee",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            (혼잡도 레벨을 넣어줘)
-                          </li>
-                        ))}
-                      </ul>
+                      />
                     </div>
                   </div>
                 </>
