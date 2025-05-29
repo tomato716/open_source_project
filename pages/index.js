@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import dynamic from "next/dynamic";
 import { Bar } from "react-chartjs-2";
-import Chart from 'chart.js/auto';
-
+import Chart from "chart.js/auto";
 
 // 모달 스타일
 const modalStyle = {
@@ -35,8 +34,8 @@ const overlayStyle = {
 
 // Leaflet 객체를 클라이언트 사이드에서만 로드
 let L;
-if (typeof window !== 'undefined') {
-  L = require('leaflet');
+if (typeof window !== "undefined") {
+  L = require("leaflet");
 }
 
 // 커스텀 마커 아이콘 생성 함수 (클라이언트 사이드에서만 실행)
@@ -44,11 +43,12 @@ const createCustomIcon = (color) => {
   if (!L) return null;
   return new L.Icon({
     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    shadowUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
-    shadowSize: [41, 41]
+    shadowSize: [41, 41],
   });
 };
 
@@ -56,14 +56,14 @@ const createCustomIcon = (color) => {
 const getMarkerIcons = () => {
   if (!L) return {};
   return {
-    red: createCustomIcon('red'),
-    blue: createCustomIcon('blue'),
-    green: createCustomIcon('green'),
-    orange: createCustomIcon('orange'),
-    yellow: createCustomIcon('yellow'),
-    violet: createCustomIcon('violet'),
-    grey: createCustomIcon('grey'),
-    black: createCustomIcon('black')
+    red: createCustomIcon("red"),
+    blue: createCustomIcon("blue"),
+    green: createCustomIcon("green"),
+    orange: createCustomIcon("orange"),
+    yellow: createCustomIcon("yellow"),
+    violet: createCustomIcon("violet"),
+    grey: createCustomIcon("grey"),
+    black: createCustomIcon("black"),
   };
 };
 
@@ -72,17 +72,24 @@ const MapContainerWithNoSSR = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   {
     ssr: false,
-    loading: () => <div style={{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      zIndex: 999,
-      backgroundColor: 'rgba(255,255,255,0.8)',
-      padding: '10px 20px',
-      borderRadius: '5px'
-    }}>지도 로딩 중...</div>,
-  });
+    loading: () => (
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 999,
+          backgroundColor: "rgba(255,255,255,0.8)",
+          padding: "10px 20px",
+          borderRadius: "5px",
+        }}
+      >
+        지도 로딩 중...
+      </div>
+    ),
+  }
+);
 
 const TileLayerWithNoSSR = dynamic(
   () => import("react-leaflet").then((mod) => mod.TileLayer),
@@ -137,7 +144,7 @@ export default function Home() {
 
   // 마커 아이콘 초기화 (클라이언트 사이드에서만 실행)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       setMarkerIcons(getMarkerIcons());
     }
   }, []);
@@ -231,15 +238,23 @@ export default function Home() {
 
       // 시간대별 데이터 시뮬레이션 (실제 API가 없는 경우)
       const simulatedTimeData = {
-        getOnData: Array.from({ length: 19 }, (_, i) => Math.floor(Math.random() * 50)),
-        getOffData: Array.from({ length: 19 }, (_, i) => Math.floor(Math.random() * 50)),
+        getOnData: Array.from({ length: 19 }, (_, i) =>
+          Math.floor(Math.random() * 50)
+        ),
+        getOffData: Array.from({ length: 19 }, (_, i) =>
+          Math.floor(Math.random() * 50)
+        ),
       };
       setTimeData(simulatedTimeData);
 
       // 월별 데이터 시뮬레이션
       const simulatedMonthlyData = {
-        monthlyGetOn: Array.from({ length: 12 }, (_, i) => Math.floor(Math.random() * 100)),
-        monthlyGetOff: Array.from({ length: 12 }, (_, i) => Math.floor(Math.random() * 100)),
+        monthlyGetOn: Array.from({ length: 12 }, (_, i) =>
+          Math.floor(Math.random() * 100)
+        ),
+        monthlyGetOff: Array.from({ length: 12 }, (_, i) =>
+          Math.floor(Math.random() * 100)
+        ),
       };
       setMonthlyData(simulatedMonthlyData);
 
@@ -311,14 +326,21 @@ export default function Home() {
   // 마커 색상 랜덤 선택
   const getRandomMarkerColor = () => {
     const colors = Object.keys(markerIcons);
-    if (colors.length === 0) return 'blue'; // 기본값
+    if (colors.length === 0) return "blue"; // 기본값
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
   return (
     <div>
       <Head>
+        <link rel="icon" type="image/svg+xml" href="/bus.ico" />
         <title>정류장 지도</title>
+        <meta property="og:title" content="정류장 혼잡도" />
+        <meta
+          property="og:description"
+          content="대구 버스 정류장 유동 인구 혼잡도"
+        />
+        <meta property="og:image" content="/daegu.png" />
       </Head>
 
       <div style={{ height: "100vh", position: "relative" }}>
@@ -349,18 +371,22 @@ export default function Home() {
               }}
             >
               <PopupWithNoSSR>
-                <div style={{ 
-                  fontWeight: 'bold', 
-                  color: '#333',
-                  fontSize: '14px'
-                }}>
+                <div
+                  style={{
+                    fontWeight: "bold",
+                    color: "#333",
+                    fontSize: "14px",
+                  }}
+                >
                   {station["정류소명"]}
                 </div>
-                <div style={{ 
-                  fontSize: '12px',
-                  color: '#666',
-                  marginTop: '5px'
-                }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#666",
+                    marginTop: "5px",
+                  }}
+                >
                   (클릭 시 상세 정보 확인)
                 </div>
               </PopupWithNoSSR>
@@ -374,7 +400,7 @@ export default function Home() {
               icon={markerIcons.gold || markerIcons.blue} // gold가 없으면 blue 사용
             >
               <PopupWithNoSSR>
-                <div style={{ fontWeight: 'bold' }}>현재 위치</div>
+                <div style={{ fontWeight: "bold" }}>현재 위치</div>
               </PopupWithNoSSR>
             </MarkerWithNoSSR>
           )}
@@ -394,7 +420,13 @@ export default function Home() {
                 }}
               >
                 {selectedStation?.정류소명 || "정류장 정보"}
-                <span style={{ fontSize: "0.8em", color: "#666", marginLeft: "10px" }}>
+                <span
+                  style={{
+                    fontSize: "0.8em",
+                    color: "#666",
+                    marginLeft: "10px",
+                  }}
+                >
                   (정류소ID: {selectedStation?.정류소ID})
                 </span>
               </h2>
@@ -418,47 +450,82 @@ export default function Home() {
                 <>
                   <div style={{ marginBottom: "30px" }}>
                     <h3 style={{ color: "#555" }}>정류장 정보 요약</h3>
-                    <div style={{ 
-                      display: "grid", 
-                      gridTemplateColumns: "repeat(3, 1fr)", 
-                      gap: "10px",
-                      marginBottom: "20px"
-                    }}>
-                      <div style={{ 
-                        padding: "15px", 
-                        backgroundColor: "#e6f7ff", 
-                        borderRadius: "8px",
-                        borderLeft: "4px solid #1890ff",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-                      }}>
-                        <h4 style={{ marginTop: 0, color: "#1890ff" }}>현재 시간</h4>
-                        <p style={{ fontSize: "1.2em", fontWeight: "bold", color: "#1890ff" }}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        gap: "10px",
+                        marginBottom: "20px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: "15px",
+                          backgroundColor: "#e6f7ff",
+                          borderRadius: "8px",
+                          borderLeft: "4px solid #1890ff",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        <h4 style={{ marginTop: 0, color: "#1890ff" }}>
+                          현재 시간
+                        </h4>
+                        <p
+                          style={{
+                            fontSize: "1.2em",
+                            fontWeight: "bold",
+                            color: "#1890ff",
+                          }}
+                        >
                           {currentHour}시
                         </p>
                       </div>
-                      <div style={{ 
-                        padding: "15px", 
-                        backgroundColor: "#fff2e8", 
-                        borderRadius: "8px",
-                        borderLeft: "4px solid #fa8c16",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-                      }}>
-                        <h4 style={{ marginTop: 0, color: "#fa8c16" }}>예상 혼잡도</h4>
-                        <p style={{ fontSize: "1.2em", fontWeight: "bold", color: "#fa8c16" }}>
+                      <div
+                        style={{
+                          padding: "15px",
+                          backgroundColor: "#fff2e8",
+                          borderRadius: "8px",
+                          borderLeft: "4px solid #fa8c16",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        <h4 style={{ marginTop: 0, color: "#fa8c16" }}>
+                          예상 혼잡도
+                        </h4>
+                        <p
+                          style={{
+                            fontSize: "1.2em",
+                            fontWeight: "bold",
+                            color: "#fa8c16",
+                          }}
+                        >
                           {predictData?.congestion_level || "데이터 없음"}
                         </p>
                       </div>
-                      <div style={{ 
-                        padding: "15px", 
-                        backgroundColor: "#f6ffed", 
-                        borderRadius: "8px",
-                        borderLeft: "4px solid #52c41a",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-                      }}>
-                        <h4 style={{ marginTop: 0, color: "#52c41a" }}>평균 유동 인구</h4>
-                        <p style={{ fontSize: "1.2em", fontWeight: "bold", color: "#52c41a" }}>
-                          {predictData?.congestion_level === "혼잡" ? "20명 이상" : 
-                           predictData?.congestion_level === "보통" ? "5~19명" : "5명 미만"}
+                      <div
+                        style={{
+                          padding: "15px",
+                          backgroundColor: "#f6ffed",
+                          borderRadius: "8px",
+                          borderLeft: "4px solid #52c41a",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        <h4 style={{ marginTop: 0, color: "#52c41a" }}>
+                          평균 유동 인구
+                        </h4>
+                        <p
+                          style={{
+                            fontSize: "1.2em",
+                            fontWeight: "bold",
+                            color: "#52c41a",
+                          }}
+                        >
+                          {predictData?.congestion_level === "혼잡"
+                            ? "20명 이상"
+                            : predictData?.congestion_level === "보통"
+                            ? "5~19명"
+                            : "5명 미만"}
                         </p>
                       </div>
                     </div>
@@ -474,13 +541,13 @@ export default function Home() {
                           maintainAspectRatio: false,
                           plugins: {
                             legend: {
-                              position: 'top',
+                              position: "top",
                               labels: {
                                 font: {
-                                  size: 14
-                                }
-                              }
-                            }
+                                  size: 14,
+                                },
+                              },
+                            },
                           },
                           scales: {
                             y: {
@@ -489,28 +556,28 @@ export default function Home() {
                                 display: true,
                                 text: "인원 수",
                                 font: {
-                                  size: 14
-                                }
+                                  size: 14,
+                                },
                               },
                               ticks: {
                                 font: {
-                                  size: 12
-                                }
-                              }
+                                  size: 12,
+                                },
+                              },
                             },
                             x: {
                               title: {
                                 display: true,
                                 text: "시간대",
                                 font: {
-                                  size: 14
-                                }
+                                  size: 14,
+                                },
                               },
                               ticks: {
                                 font: {
-                                  size: 12
-                                }
-                              }
+                                  size: 12,
+                                },
+                              },
                             },
                           },
                         }}
@@ -528,13 +595,13 @@ export default function Home() {
                           maintainAspectRatio: false,
                           plugins: {
                             legend: {
-                              position: 'top',
+                              position: "top",
                               labels: {
                                 font: {
-                                  size: 14
-                                }
-                              }
-                            }
+                                  size: 14,
+                                },
+                              },
+                            },
                           },
                           scales: {
                             y: {
@@ -543,28 +610,28 @@ export default function Home() {
                                 display: true,
                                 text: "인원 수",
                                 font: {
-                                  size: 14
-                                }
+                                  size: 14,
+                                },
                               },
                               ticks: {
                                 font: {
-                                  size: 12
-                                }
-                              }
+                                  size: 12,
+                                },
+                              },
                             },
                             x: {
                               title: {
                                 display: true,
                                 text: "월",
                                 font: {
-                                  size: 14
-                                }
+                                  size: 14,
+                                },
                               },
                               ticks: {
                                 font: {
-                                  size: 12
-                                }
-                              }
+                                  size: 12,
+                                },
+                              },
                             },
                           },
                         }}
@@ -587,7 +654,7 @@ export default function Home() {
                     fontSize: "16px",
                     transition: "background-color 0.3s",
                     boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-                    fontWeight: "bold"
+                    fontWeight: "bold",
                   }}
                   onMouseOver={(e) =>
                     (e.target.style.backgroundColor = "#45a049")
