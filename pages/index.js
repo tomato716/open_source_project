@@ -1,27 +1,75 @@
-import { useState, useEffect } from 'react';
-import Head from 'next/head';
-import dynamic from 'next/dynamic';
+import { useState, useEffect } from "react";
+import Head from "next/head";
+import dynamic from "next/dynamic";
 
-// ------------- 추가되거나 수정된 부분 ----------------------------------
-// 위도/경도 좌표 두 지점(lat1, lon1)과 (lat2, lon2) 사이의 거리(km)를 계산하는 함수
+// 모달 스타일
+const modalStyle = {
+  position: "fixed",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  backgroundColor: "white",
+  padding: "20px",
+  borderRadius: "8px",
+  boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+  zIndex: 9999,
+  width: "90%",
+  maxWidth: "900px",
+  maxHeight: "90vh",
+  overflowY: "auto",
+  border: "1px solid #ddd",
+};
+
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  zIndex: 9998,
+};
+
+const MapContainerWithNoSSR = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  {
+    ssr: false,
+    loading: () => <div>지도 로딩 중...</div>,
+  }
+);
+
+const TileLayerWithNoSSR = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+
+const MarkerWithNoSSR = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  {
+    ssr: false,
+    loading: () => <div>마커 로딩 중...</div>,
+  }
+);
+
+const PopupWithNoSSR = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
+
+const DAEGU_UNIV = [35.8866, 128.7406];
+
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // 지구 반지름 (단위: km)
-
-  // 위도, 경도 차이를 라디안으로 변환
-  const dLat = ((lat2 - lat1) * Math.PI) / 180; // 위도 차이 (라디안)
-  const dLon = ((lon2 - lon1) * Math.PI) / 180; // 경도 차이 (라디안)
-
-  // 하버사인 공식 적용
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) + // 위도 차에 대한 사인값 제곱
-    Math.cos((lat1 * Math.PI) / 180) * // 첫 번째 지점 위도 (라디안 변환 후 코사인)
-      Math.cos((lat2 * Math.PI) / 180) * // 두 번째 지점 위도 (라디안 변환 후 코사인)
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
       Math.sin(dLon / 2) *
-      Math.sin(dLon / 2); // 경도 차에 대한 사인값 제곱
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // 중심각 계산 (radians)
-
-  return R * c; // 거리 = 지구 반지름 * 중심각
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 export default function Home() {
@@ -30,7 +78,7 @@ export default function Home() {
   const [stations, setStations] = useState([]);
   const [filteredStations, setFilteredStations] = useState([]);
   const [selectedStation, setSelectedStation] = useState(null);
-  const [chartData, setChartData] = useState(null);
+  const [timeData, setTimeData] = useState(null);
   const [monthlyData, setMonthlyData] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,7 +95,7 @@ export default function Home() {
   const closeModal = () => {
     setShowModal(false);
     setSelectedStation(null);
-    setChartData(null);
+    setTimeData(null);
     setMonthlyData(null);
     setError(null);
   };
@@ -97,7 +145,6 @@ export default function Home() {
     }
   };
 
-
   const fetchStationData = async (station) => {
     try {
       setShowModal(true);
@@ -107,136 +154,41 @@ export default function Home() {
 
       const now = new Date();
       const hour = now.getHours().toString().padStart(2, "0") + "시";
-      // 차트 라이브러리 동적 임포트
-    await Promise.all([
-      import('chart.js/auto'),
-      import('react-chartjs-2')
-    ]);
-      
-      // API 호출에 더 많은 에러 핸들링 추가
-    const [timeRes, monthlyRes] = await Promise.all([
-      fetch(`/api/getOff_getOn_stats?stationId=${station["정류소ID"]}&hour=${hour}`)
-        .then(res => {
-          if (!res.ok) throw new Error(`시간대별 데이터 요청 실패: ${res.status}`);
+
+      const [timeRes, monthlyRes] = await Promise.all([
+        fetch(
+          `/api/getOff_getOn_stats?stationId=${station["정류소ID"]}&hour=${hour}`
+        ).then((res) => {
+          if (!res.ok)
+            throw new Error(`시간대별 데이터 요청 실패: ${res.status}`);
           return res.json();
         }),
-      fetch(`/api/monthly_stats?stationId=${station["정류소ID"]}`)
-        .then(res => {
-          if (!res.ok) throw new Error(`월별 데이터 요청 실패: ${res.status}`);
-          return res.json();
-        })
-    ]);
+        fetch(`/api/monthly_stats?stationId=${station["정류소ID"]}`).then(
+          (res) => {
+            if (!res.ok)
+              throw new Error(`월별 데이터 요청 실패: ${res.status}`);
+            return res.json();
+          }
+        ),
+      ]);
 
-      if (!timeRes.ok || !monthlyRes.ok) throw new Error("API 요청 실패");
-
-      const [timeData, monthlyData] = await Promise.all([
-  timeRes,
-  monthlyRes
-]);
-
-      // 시간대별 데이터 처리
-      const timeLabels = [
-        "05시", "06시", "07시", "08시", "09시", 
-        "10시", "11시", "12시", "13시", "14시", 
-        "15시", "16시", "17시", "18시", "19시", 
-        "20시", "21시", "22시", "23시"
-      ];
-      
-      const chartData = {
-        labels: timeLabels,
-        datasets: [
-          {
-            label: "승차",
-            data: timeData.getOnData || Array(19).fill(0),
-            backgroundColor: "rgba(54, 162, 235, 0.5)",
-            borderColor: "rgba(54, 162, 235, 1)",
-            borderWidth: 1,
-          },
-          {
-            label: "하차",
-            data: timeData.getOffData || Array(19).fill(0),
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
-            borderColor: "rgba(255, 99, 132, 1)",
-            borderWidth: 1,
-          },
-        ],
-      };
-
-      // 월별 데이터 처리
-      const monthlyChartData = {
-        labels: [
-          "1월", "2월", "3월", "4월", "5월", "6월",
-          "7월", "8월", "9월", "10월", "11월", "12월"
-        ],
-        datasets: [
-          {
-            label: "월별 승차 누적",
-            data: monthlyData.monthlyGetOn || Array(12).fill(0),
-            backgroundColor: "rgba(75, 192, 192, 0.5)",
-            borderColor: "rgba(75, 192, 192, 1)",
-            borderWidth: 1,
-          },
-          {
-            label: "월별 하차 누적",
-            data: monthlyData.monthlyGetOff || Array(12).fill(0),
-            backgroundColor: "rgba(153, 102, 255, 0.5)",
-            borderColor: "rgba(153, 102, 255, 1)",
-            borderWidth: 1,
-          },
-        ],
-      };
-
-      setChartData(chartData);
-      setMonthlyData(monthlyChartData);
+      setTimeData(timeRes);
+      setMonthlyData(monthlyRes);
       setLoading(false);
-
     } catch (error) {
       console.error("데이터 로드 실패:", error);
       setError(error.message || "데이터를 불러오는 중 오류가 발생했습니다");
       setLoading(false);
-      
+
       // 기본 데이터 구조 제공
-      const timeLabels = Array(19).fill("").map((_, i) => `${i+5}시`);
-      const monthLabels = Array(12).fill("").map((_, i) => `${i+1}월`);
-      
-      setChartData({
-        labels: timeLabels,
-        datasets: [
-          {
-            label: "승차",
-            data: Array(19).fill(0),
-            backgroundColor: "rgba(54, 162, 235, 0.5)",
-            borderColor: "rgba(54, 162, 235, 1)",
-            borderWidth: 1,
-          },
-          {
-            label: "하차",
-            data: Array(19).fill(0),
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
-            borderColor: "rgba(255, 99, 132, 1)",
-            borderWidth: 1,
-          },
-        ],
+      setTimeData({
+        getOnData: Array(19).fill(0),
+        getOffData: Array(19).fill(0),
       });
-      
+
       setMonthlyData({
-        labels: monthLabels,
-        datasets: [
-          {
-            label: "월별 승차 누적",
-            data: Array(12).fill(0),
-            backgroundColor: "rgba(75, 192, 192, 0.5)",
-            borderColor: "rgba(75, 192, 192, 1)",
-            borderWidth: 1,
-          },
-          {
-            label: "월별 하차 누적",
-            data: Array(12).fill(0),
-            backgroundColor: "rgba(153, 102, 255, 0.5)",
-            borderColor: "rgba(153, 102, 255, 1)",
-            borderWidth: 1,
-          },
-        ],
+        monthlyGetOn: Array(12).fill(0),
+        monthlyGetOff: Array(12).fill(0),
       });
     }
   };
@@ -248,7 +200,6 @@ export default function Home() {
   return (
     <div>
       <Head>
-
         <title>정류장 지도</title>
         <link
           rel="stylesheet"
@@ -260,36 +211,40 @@ export default function Home() {
 
       <div style={{ height: "100vh", position: "relative" }}>
         {!mapLoaded && (
-          <div style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 999
-          }}>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 999,
+            }}
+          >
             지도 로딩 중...
           </div>
         )}
-        
-        <MapContainerWithNoSSR
-  center={center}
-  zoom={13}
-  style={{ height: "100%", width: "100%" }}
-  whenCreated={(map) => {
-    setMapInstance(map);
-    handleMapLoad();
-  }}
->
 
+        <MapContainerWithNoSSR
+          center={center}
+          zoom={13}
+          style={{ height: "100%", width: "100%" }}
+          whenCreated={(map) => {
+            setMapInstance(map);
+            handleMapLoad();
+          }}
+        >
           <TileLayerWithNoSSR
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          
+
           {filteredStations.map((station, idx) => (
             <MarkerWithNoSSR
               key={`${station.정류소ID}-${idx}`}
-              position={[parseFloat(station["yPos"]), parseFloat(station["xPos"])]}
+              position={[
+                parseFloat(station["yPos"]),
+                parseFloat(station["xPos"]),
+              ]}
               eventHandlers={{
                 click: () => fetchStationData(station),
               }}
@@ -303,102 +258,151 @@ export default function Home() {
           ))}
         </MapContainerWithNoSSR>
 
-      
-
         {/* 모달 창 */}
         {showModal && (
           <>
             <div style={overlayStyle} onClick={closeModal} />
             <div style={modalStyle}>
-              <h2 style={{ marginTop: 0, color: "#333", borderBottom: "1px solid #eee", paddingBottom: "10px" }}>
+              <h2
+                style={{
+                  marginTop: 0,
+                  color: "#333",
+                  borderBottom: "1px solid #eee",
+                  paddingBottom: "10px",
+                }}
+              >
                 {selectedStation?.정류소명 || "정류장 정보"}
               </h2>
-              
+
               {error ? (
                 <div style={{ color: "red", margin: "20px 0" }}>
                   오류 발생: {error}
                 </div>
               ) : loading ? (
-                <div style={{ height: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div
+                  style={{
+                    height: "300px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   데이터를 불러오는 중...
                 </div>
               ) : (
                 <>
                   <div style={{ marginBottom: "30px" }}>
-                    <h3 style={{ color: "#555" }}>시간대별 승하차 추이 (2023년 전체)</h3>
-                    <div style={{ height: "300px" }}>
-                          {chartData && chartData.labels && chartData.labels.length > 0 ? (
-                            
-  <div style={{ height: "300px" }}>
-  <ChartWithNoSSR.Bar
-    data={chartData}
-    options={{
-        responsive: true,
-        maintainAspectRatio: false,
-                            scales: {
-                              y: {
-                                beginAtZero: true,
-                                title: {
-                                  display: true,
-                                  text: "승하차 인원 (명)"
-                                }
-                              },
-                              x: {
-                                title: {
-                                  display: true,
-                                  text: "시간대"
-                                }
-                              }
-                            }
-                          }}
-                          />
-                        </div>
-                      ) : (
-                        <div style={{ height: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          {loading ? "데이터를 불러오는 중..." : "표시할 데이터가 없습니다."}
-                        </div>
-                      )}
+                    <h3 style={{ color: "#555" }}>
+                      시간대별 승하차 추이 (2023년 전체)
+                    </h3>
+                    <div style={{ margin: "20px 0" }}>
+                      <h4>승차 인원</h4>
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          padding: 0,
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4, 1fr)",
+                          gap: "10px",
+                        }}
+                      >
+                        {timeData?.getOnData?.map((count, index) => (
+                          <li
+                            key={`on-${index}`}
+                            style={{
+                              padding: "5px",
+                              border: "1px solid #eee",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {index + 5}시: {count}명
+                          </li>
+                        ))}
+                      </ul>
+
+                      <h4 style={{ marginTop: "20px" }}>하차 인원</h4>
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          padding: 0,
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4, 1fr)",
+                          gap: "10px",
+                        }}
+                      >
+                        {timeData?.getOffData?.map((count, index) => (
+                          <li
+                            key={`off-${index}`}
+                            style={{
+                              padding: "5px",
+                              border: "1px solid #eee",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {index + 5}시: {count}명
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
 
                   <div style={{ marginBottom: "30px" }}>
                     <h3 style={{ color: "#555" }}>월별 승하차 누적 (2023년)</h3>
-                    <div style={{ height: "300px" }}>
-                      {monthlyData ? (
-                        <ChartWithNoSSR.Line
-                          data={monthlyData}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                              y: {
-                                beginAtZero: true,
-                                title: {
-                                  display: true,
-                                  text: "누적 인원 (명)"
-                                }
-                              },
-                              x: {
-                                title: {
-                                  display: true,
-                                  text: "월"
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          데이터가 없습니다.
-                        </div>
-                      )}
+                    <div style={{ margin: "20px 0" }}>
+                      <h4>월별 승차 누적</h4>
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          padding: 0,
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4, 1fr)",
+                          gap: "10px",
+                        }}
+                      >
+                        {monthlyData?.monthlyGetOn?.map((count, index) => (
+                          <li
+                            key={`month-on-${index}`}
+                            style={{
+                              padding: "5px",
+                              border: "1px solid #eee",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {index + 1}월: {count}명
+                          </li>
+                        ))}
+                      </ul>
+
+                      <h4 style={{ marginTop: "20px" }}>월별 하차 누적</h4>
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          padding: 0,
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4, 1fr)",
+                          gap: "10px",
+                        }}
+                      >
+                        {monthlyData?.monthlyGetOff?.map((count, index) => (
+                          <li
+                            key={`month-off-${index}`}
+                            style={{
+                              padding: "5px",
+                              border: "1px solid #eee",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {index + 1}월: {count}명
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 </>
               )}
 
               <div style={{ textAlign: "center", marginTop: "20px" }}>
-                <button 
+                <button
                   onClick={closeModal}
                   style={{
                     padding: "10px 20px",
@@ -408,10 +412,14 @@ export default function Home() {
                     borderRadius: "4px",
                     cursor: "pointer",
                     fontSize: "16px",
-                    transition: "background-color 0.3s"
+                    transition: "background-color 0.3s",
                   }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = "#45a049"}
-                  onMouseOut={(e) => e.target.style.backgroundColor = "#4CAF50"}
+                  onMouseOver={(e) =>
+                    (e.target.style.backgroundColor = "#45a049")
+                  }
+                  onMouseOut={(e) =>
+                    (e.target.style.backgroundColor = "#4CAF50")
+                  }
                 >
                   닫기
                 </button>
