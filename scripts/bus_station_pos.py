@@ -3,7 +3,7 @@ import csv
 
 key = "koGvncvrGHQSqT289Xzg0zxNcyuErvBCKEazlAYOayip%2Bj2x6LZagF%2BL0Lg00oG4JPRqbKuFI29vle12dZ7%2Bvw%3D%3D"
 url = f"http://apis.data.go.kr/6270000/dbmsapi01/getBasic?serviceKey={key}"
-csv_file = "bus_station_data.csv"
+csv_file = "/data/bus_station_data.csv"
 
 response = requests.get(url, verify=False)
 data = response.json()

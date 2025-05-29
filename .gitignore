@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 큰 파일 무시
+data/getOff_getOn_data.db
+data/getOff_getOn_data.zip

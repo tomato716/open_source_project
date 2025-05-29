@@ -85,6 +85,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
+  const [predictData, setPredictData] = useState(null);
 
   // 지도 로딩 완료 핸들러
   const handleMapLoad = () => {
@@ -111,7 +112,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!stations.length) return;
-    const RADIUS_KM = 10;
+    const RADIUS_KM = 1; // km 반경
 
     const filtered = stations.filter((station) => {
       const lat = parseFloat(station["yPos"]);
@@ -155,21 +156,44 @@ export default function Home() {
       const now = new Date();
       const hour = now.getHours().toString().padStart(2, "0") + "시";
 
+      // console.log("hour 값:", now?.getHours());
+
+      // console.log("선택된 정류장 객체:", station["정류소ID"]);
+
       const [timeRes, monthlyRes] = await Promise.all([
-        fetch(
-          `/api/getOff_getOn_stats?stationId=${station["정류소ID"]}&hour=${hour}`
-        ).then((res) => {
-          if (!res.ok)
-            throw new Error(`시간대별 데이터 요청 실패: ${res.status}`);
-          return res.json();
-        }),
-        fetch(`/api/monthly_stats?stationId=${station["정류소ID"]}`).then(
-          (res) => {
+        // fetch(
+        //   `/api/getOff_getOn_stats?stationId=${station["정류소ID"]}&hour=${hour}`
+        // ).then((res) => {
+        //   if (!res.ok)
+        //     throw new Error(`시간대별 데이터 요청 실패: ${res.status}`);
+        //   return res.json();
+        // }),
+        // fetch(`/api/monthly_stats?stationId=${station["정류소ID"]}`).then(
+        //   (res) => {
+        //     if (!res.ok)
+        //       throw new Error(`월별 데이터 요청 실패: ${res.status}`);
+        //     return res.json();
+        //   }
+        // ),
+
+        // 수정 중
+        fetch("/api/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            station_id: station["정류소ID"],
+          }),
+        })
+          .then((res) => {
             if (!res.ok)
-              throw new Error(`월별 데이터 요청 실패: ${res.status}`);
+              throw new Error(`예측 요청 실패(predict): ${res.status}`);
             return res.json();
-          }
-        ),
+          })
+          .then((data) => {
+            console.log("예측 결과:", data);
+          }),
       ]);
 
       setTimeData(timeRes);
@@ -296,7 +320,7 @@ export default function Home() {
                       시간대별 승하차 추이 (2023년 전체)
                     </h3>
                     <div style={{ margin: "20px 0" }}>
-                      <h4>승차 인원</h4>
+                      <h4>현재 시간:</h4>
                       <ul
                         style={{
                           listStyle: "none",
@@ -306,6 +330,7 @@ export default function Home() {
                           gap: "10px",
                         }}
                       >
+                        {/* 수정 필요 */}
                         {timeData?.getOnData?.map((count, index) => (
                           <li
                             key={`on-${index}`}
@@ -315,12 +340,12 @@ export default function Home() {
                               borderRadius: "4px",
                             }}
                           >
-                            {index + 5}시: {count}명
+                            (현재 시간 데이터 넣어줘)
                           </li>
                         ))}
                       </ul>
 
-                      <h4 style={{ marginTop: "20px" }}>하차 인원</h4>
+                      <h4 style={{ marginTop: "20px" }}>평균 유동 인구</h4>
                       <ul
                         style={{
                           listStyle: "none",
@@ -330,6 +355,7 @@ export default function Home() {
                           gap: "10px",
                         }}
                       >
+                        {/* 수정 필요 */}
                         {timeData?.getOffData?.map((count, index) => (
                           <li
                             key={`off-${index}`}
@@ -339,17 +365,11 @@ export default function Home() {
                               borderRadius: "4px",
                             }}
                           >
-                            {index + 5}시: {count}명
+                            (predict.js의 평균 값 넣어줘)
                           </li>
                         ))}
                       </ul>
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: "30px" }}>
-                    <h3 style={{ color: "#555" }}>월별 승하차 누적 (2023년)</h3>
-                    <div style={{ margin: "20px 0" }}>
-                      <h4>월별 승차 누적</h4>
+                      <h4 style={{ marginTop: "20px" }}>혼잡도 레벨</h4>
                       <ul
                         style={{
                           listStyle: "none",
@@ -359,40 +379,17 @@ export default function Home() {
                           gap: "10px",
                         }}
                       >
-                        {monthlyData?.monthlyGetOn?.map((count, index) => (
+                        {/* 수정 필요 */}
+                        {timeData?.getOffData?.map((count, index) => (
                           <li
-                            key={`month-on-${index}`}
+                            key={`off-${index}`}
                             style={{
                               padding: "5px",
                               border: "1px solid #eee",
                               borderRadius: "4px",
                             }}
                           >
-                            {index + 1}월: {count}명
-                          </li>
-                        ))}
-                      </ul>
-
-                      <h4 style={{ marginTop: "20px" }}>월별 하차 누적</h4>
-                      <ul
-                        style={{
-                          listStyle: "none",
-                          padding: 0,
-                          display: "grid",
-                          gridTemplateColumns: "repeat(4, 1fr)",
-                          gap: "10px",
-                        }}
-                      >
-                        {monthlyData?.monthlyGetOff?.map((count, index) => (
-                          <li
-                            key={`month-off-${index}`}
-                            style={{
-                              padding: "5px",
-                              border: "1px solid #eee",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            {index + 1}월: {count}명
+                            (혼잡도 레벨을 넣어줘)
                           </li>
                         ))}
                       </ul>
