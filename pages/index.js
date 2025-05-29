@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { Bar } from "react-chartjs-2";
 import Chart from 'chart.js/auto';
 
+
 // 모달 스타일
 const modalStyle = {
   position: "fixed",
@@ -32,13 +33,56 @@ const overlayStyle = {
   zIndex: 9998,
 };
 
+// Leaflet 객체를 클라이언트 사이드에서만 로드
+let L;
+if (typeof window !== 'undefined') {
+  L = require('leaflet');
+}
+
+// 커스텀 마커 아이콘 생성 함수 (클라이언트 사이드에서만 실행)
+const createCustomIcon = (color) => {
+  if (!L) return null;
+  return new L.Icon({
+    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+};
+
+// 색상별 마커 아이콘 (클라이언트 사이드에서만 생성)
+const getMarkerIcons = () => {
+  if (!L) return {};
+  return {
+    red: createCustomIcon('red'),
+    blue: createCustomIcon('blue'),
+    green: createCustomIcon('green'),
+    orange: createCustomIcon('orange'),
+    yellow: createCustomIcon('yellow'),
+    violet: createCustomIcon('violet'),
+    grey: createCustomIcon('grey'),
+    black: createCustomIcon('black')
+  };
+};
+
+// 동적으로 컴포넌트 로드 (SSR 비활성화)
 const MapContainerWithNoSSR = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   {
     ssr: false,
-    loading: () => <div>지도 로딩 중...</div>,
-  }
-);
+    loading: () => <div style={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      zIndex: 999,
+      backgroundColor: 'rgba(255,255,255,0.8)',
+      padding: '10px 20px',
+      borderRadius: '5px'
+    }}>지도 로딩 중...</div>,
+  });
 
 const TileLayerWithNoSSR = dynamic(
   () => import("react-leaflet").then((mod) => mod.TileLayer),
@@ -49,7 +93,7 @@ const MarkerWithNoSSR = dynamic(
   () => import("react-leaflet").then((mod) => mod.Marker),
   {
     ssr: false,
-    loading: () => <div>마커 로딩 중...</div>,
+    loading: () => null,
   }
 );
 
@@ -89,6 +133,14 @@ export default function Home() {
   const [mapInstance, setMapInstance] = useState(null);
   const [predictData, setPredictData] = useState(null);
   const [currentHour, setCurrentHour] = useState(null);
+  const [markerIcons, setMarkerIcons] = useState({});
+
+  // 마커 아이콘 초기화 (클라이언트 사이드에서만 실행)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setMarkerIcons(getMarkerIcons());
+    }
+  }, []);
 
   // 지도 로딩 완료 핸들러
   const handleMapLoad = () => {
@@ -221,16 +273,16 @@ export default function Home() {
       {
         label: "승차 인원",
         data: timeData?.getOnData || [],
-        backgroundColor: "rgba(54, 162, 235, 0.5)",
+        backgroundColor: "rgba(54, 162, 235, 0.7)",
         borderColor: "rgba(54, 162, 235, 1)",
-        borderWidth: 1,
+        borderWidth: 2,
       },
       {
         label: "하차 인원",
         data: timeData?.getOffData || [],
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
+        backgroundColor: "rgba(255, 99, 132, 0.7)",
         borderColor: "rgba(255, 99, 132, 1)",
-        borderWidth: 1,
+        borderWidth: 2,
       },
     ],
   };
@@ -242,47 +294,34 @@ export default function Home() {
       {
         label: "월별 승차 인원",
         data: monthlyData?.monthlyGetOn || [],
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
+        backgroundColor: "rgba(75, 192, 192, 0.7)",
         borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
+        borderWidth: 2,
       },
       {
         label: "월별 하차 인원",
         data: monthlyData?.monthlyGetOff || [],
-        backgroundColor: "rgba(153, 102, 255, 0.5)",
+        backgroundColor: "rgba(153, 102, 255, 0.7)",
         borderColor: "rgba(153, 102, 255, 1)",
-        borderWidth: 1,
+        borderWidth: 2,
       },
     ],
+  };
+
+  // 마커 색상 랜덤 선택
+  const getRandomMarkerColor = () => {
+    const colors = Object.keys(markerIcons);
+    if (colors.length === 0) return 'blue'; // 기본값
+    return colors[Math.floor(Math.random() * colors.length)];
   };
 
   return (
     <div>
       <Head>
         <title>정류장 지도</title>
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-          crossOrigin=""
-        />
       </Head>
 
       <div style={{ height: "100vh", position: "relative" }}>
-        {!mapLoaded && (
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 999,
-            }}
-          >
-            지도 로딩 중...
-          </div>
-        )}
-
         <MapContainerWithNoSSR
           center={center}
           zoom={13}
@@ -304,17 +343,41 @@ export default function Home() {
                 parseFloat(station["yPos"]),
                 parseFloat(station["xPos"]),
               ]}
+              icon={markerIcons[getRandomMarkerColor()]}
               eventHandlers={{
                 click: () => fetchStationData(station),
               }}
             >
               <PopupWithNoSSR>
-                {station["정류소명"]}
-                <br />
-                (클릭 시 상세 정보 확인)
+                <div style={{ 
+                  fontWeight: 'bold', 
+                  color: '#333',
+                  fontSize: '14px'
+                }}>
+                  {station["정류소명"]}
+                </div>
+                <div style={{ 
+                  fontSize: '12px',
+                  color: '#666',
+                  marginTop: '5px'
+                }}>
+                  (클릭 시 상세 정보 확인)
+                </div>
               </PopupWithNoSSR>
             </MarkerWithNoSSR>
           ))}
+
+          {/* 사용자 위치 마커 */}
+          {userLocation && (
+            <MarkerWithNoSSR
+              position={userLocation}
+              icon={markerIcons.gold || markerIcons.blue} // gold가 없으면 blue 사용
+            >
+              <PopupWithNoSSR>
+                <div style={{ fontWeight: 'bold' }}>현재 위치</div>
+              </PopupWithNoSSR>
+            </MarkerWithNoSSR>
+          )}
         </MapContainerWithNoSSR>
 
         {/* 모달 창 */}
@@ -363,34 +426,37 @@ export default function Home() {
                     }}>
                       <div style={{ 
                         padding: "15px", 
-                        backgroundColor: "#f0f8ff", 
+                        backgroundColor: "#e6f7ff", 
                         borderRadius: "8px",
-                        borderLeft: "4px solid #4682b4"
+                        borderLeft: "4px solid #1890ff",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
                       }}>
-                        <h4 style={{ marginTop: 0, color: "#4682b4" }}>현재 시간</h4>
-                        <p style={{ fontSize: "1.2em", fontWeight: "bold" }}>
+                        <h4 style={{ marginTop: 0, color: "#1890ff" }}>현재 시간</h4>
+                        <p style={{ fontSize: "1.2em", fontWeight: "bold", color: "#1890ff" }}>
                           {currentHour}시
                         </p>
                       </div>
                       <div style={{ 
                         padding: "15px", 
-                        backgroundColor: "#fff0f5", 
+                        backgroundColor: "#fff2e8", 
                         borderRadius: "8px",
-                        borderLeft: "4px solid #db7093"
+                        borderLeft: "4px solid #fa8c16",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
                       }}>
-                        <h4 style={{ marginTop: 0, color: "#db7093" }}>예상 혼잡도</h4>
-                        <p style={{ fontSize: "1.2em", fontWeight: "bold" }}>
+                        <h4 style={{ marginTop: 0, color: "#fa8c16" }}>예상 혼잡도</h4>
+                        <p style={{ fontSize: "1.2em", fontWeight: "bold", color: "#fa8c16" }}>
                           {predictData?.congestion_level || "데이터 없음"}
                         </p>
                       </div>
                       <div style={{ 
                         padding: "15px", 
-                        backgroundColor: "#f0fff0", 
+                        backgroundColor: "#f6ffed", 
                         borderRadius: "8px",
-                        borderLeft: "4px solid #2e8b57"
+                        borderLeft: "4px solid #52c41a",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
                       }}>
-                        <h4 style={{ marginTop: 0, color: "#2e8b57" }}>평균 유동 인구</h4>
-                        <p style={{ fontSize: "1.2em", fontWeight: "bold" }}>
+                        <h4 style={{ marginTop: 0, color: "#52c41a" }}>평균 유동 인구</h4>
+                        <p style={{ fontSize: "1.2em", fontWeight: "bold", color: "#52c41a" }}>
                           {predictData?.congestion_level === "혼잡" ? "20명 이상" : 
                            predictData?.congestion_level === "보통" ? "5~19명" : "5명 미만"}
                         </p>
@@ -406,19 +472,45 @@ export default function Home() {
                         options={{
                           responsive: true,
                           maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              position: 'top',
+                              labels: {
+                                font: {
+                                  size: 14
+                                }
+                              }
+                            }
+                          },
                           scales: {
                             y: {
                               beginAtZero: true,
                               title: {
                                 display: true,
                                 text: "인원 수",
+                                font: {
+                                  size: 14
+                                }
                               },
+                              ticks: {
+                                font: {
+                                  size: 12
+                                }
+                              }
                             },
                             x: {
                               title: {
                                 display: true,
                                 text: "시간대",
+                                font: {
+                                  size: 14
+                                }
                               },
+                              ticks: {
+                                font: {
+                                  size: 12
+                                }
+                              }
                             },
                           },
                         }}
@@ -434,19 +526,45 @@ export default function Home() {
                         options={{
                           responsive: true,
                           maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              position: 'top',
+                              labels: {
+                                font: {
+                                  size: 14
+                                }
+                              }
+                            }
+                          },
                           scales: {
                             y: {
                               beginAtZero: true,
                               title: {
                                 display: true,
                                 text: "인원 수",
+                                font: {
+                                  size: 14
+                                }
                               },
+                              ticks: {
+                                font: {
+                                  size: 12
+                                }
+                              }
                             },
                             x: {
                               title: {
                                 display: true,
                                 text: "월",
+                                font: {
+                                  size: 14
+                                }
                               },
+                              ticks: {
+                                font: {
+                                  size: 12
+                                }
+                              }
                             },
                           },
                         }}
@@ -468,6 +586,8 @@ export default function Home() {
                     cursor: "pointer",
                     fontSize: "16px",
                     transition: "background-color 0.3s",
+                    boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                    fontWeight: "bold"
                   }}
                   onMouseOver={(e) =>
                     (e.target.style.backgroundColor = "#45a049")
