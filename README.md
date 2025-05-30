@@ -76,19 +76,19 @@ open_source_project/
 │   └── data/getOff_getOn_avg.csv
 ├── lib/predictor.js
 ├── pages/
-│   ├── api/              
+│   ├── api/
 │   │   └── api/_document.js
-│   │   ├── stations.js    
-│   │   └── predict.js      
-│   └── index.js           
-├── public/            
-│   ├── bus.ico           
-│   └── daegu.png           
+│   │   ├── stations.js
+│   │   └── predict.js
+│   └── index.js
+├── public/
+│   ├── bus.ico
+│   └── daegu.png
 ├── scripts/
 │   └── scripts/bus_station_pos.py
 │   └── scripts/getOff_getOn_preprocessor.py
-├── styles/                  
-└── README.md                
+├── styles/
+└── README.md
 # 🌟 기능 상세 설명
 1. 지도 서비스
 OpenStreetMap 타일 레이어 사용
