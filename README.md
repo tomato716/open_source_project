@@ -88,8 +88,12 @@ open_source_project/
 │   │   └── predict.js      
 
 │   └── index.js           
+             
+├── public/             
 
-├── public/                
+│   ├── bus.ico           
+
+│   └── daegu.png           
 
 ├── scripts/
 
@@ -125,9 +129,6 @@ OpenStreetMap 타일 레이어 사용
 월별 승하차 인원 추이 (막대 그래프)
 
 # 📈 데이터 흐름도
-Diagram
-
-Code
 
 graph TD
 
