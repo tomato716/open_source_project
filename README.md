@@ -39,10 +39,10 @@
 
 # 🛠 기술 스택
 Frontend
-Next.js
-React
-Leaflet
-Chart.js
+<img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="100" height="50">
+<img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black" width="100" height="50">
+<img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="100" height="50">
+<img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="100" height="50">
 APIs
 Geolocation API
 Custom API endpoints (/api/stations, /api/predict)
