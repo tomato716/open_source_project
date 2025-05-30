@@ -38,17 +38,15 @@
 📱 반응형 디자인: 다양한 디바이스에서 최적화된 화면 제공
 
 # 🛠 기술 스택
-Frontend
+Frontend                        
+<img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="65" height="20">                        
+<img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black" width="65" height="20">                        
+<img src="https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white" width="65" height="20">                        
+<img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chart.js&logoColor=white" width="65" height="20">                        
 
-<img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="65" height="20">
-<img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black" width="65" height="20">
-<img src="https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white" width="65" height="20">
-<img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chart.js&logoColor=white" width="65" height="20">
-APIs
-
-Geolocation API
-
-Custom API endpoints (/api/stations, /api/predict)
+APIs                        
+Geolocation API                        
+Custom API endpoints (/api/stations, /api/predict)                        
 
 # 🚀 시작하기
 설치 방법
