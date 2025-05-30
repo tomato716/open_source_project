@@ -70,7 +70,7 @@ npm run build
 npm start
 
 # 📂 프로젝트 구조
-open_source_project/
+open_source_project/                        
 ├── data/
 │   └── data/bus_station_data.csv
 │   └── data/getOff_getOn_avg.csv
