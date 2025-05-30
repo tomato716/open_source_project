@@ -69,25 +69,37 @@ npm start
 # 📂 프로젝트 구조
 open_source_project/
 
+├── data/
+
+│   └── data/bus_station_data.csv
+
+│   └── data/getOff_getOn_avg.csv
+
+├── lib/predictor.js
+
 ├── pages/
 
-│   ├── api/                  # API 라우트
+│   ├── api/              
 
-│   │   ├── stations.js       # 정류장 데이터 API
+│   │   └── api/_document.js
 
-│   │   └── predict.js        # 혼잡도 예측 API
+│   │   ├── stations.js    
 
-│   └── index.js              # 메인 페이지
+│   │   └── predict.js      
 
-├── public/                   # 정적 파일
+│   └── index.js           
 
-│   ├── bus.ico               # 파비콘
+├── public/                
 
-│   └── daegu.png             # OG 이미지
+├── scripts/
 
-├── styles/                   # 글로벌 스타일
+│   └── scripts/bus_station_pos.py
 
-└── README.md                 # 이 파일
+│   └── scripts/getOff_getOn_preprocessor.py
+
+├── styles/                  
+
+└── README.md                
 # 🌟 기능 상세 설명
 1. 지도 서비스
 OpenStreetMap 타일 레이어 사용
