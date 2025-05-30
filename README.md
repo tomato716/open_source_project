@@ -28,9 +28,13 @@
 
 # ✨ 주요 기능
 🗺️ 인터랙티브 지도: OpenStreetMap 기반의 지도 서비스
+
 📍 정류장 위치 표시: 사용자 위치 기준 반경 1km 내 정류장 마커 표시
+
 🔍 상세 정보 조회: 정류장 클릭 시 혼잡도 및 승하차 인원 데이터 제공
+
 📊 데이터 시각화: 시간대별/월별 승하차 인원 추이를 차트로 표시
+
 📱 반응형 디자인: 다양한 디바이스에서 최적화된 화면 제공
 
 # 🛠 기술 스택
@@ -47,7 +51,7 @@ Custom API endpoints (/api/stations, /api/predict)
 설치 방법
 저장소 복제
 git clone https://github.com/tomato716/open_source_project.git
-cd bus-congestion-system
+cd open_source_project
 
 의존성 설치
 npm install
@@ -63,16 +67,26 @@ npm run build
 npm start
 
 # 📂 프로젝트 구조
-bus-congestion-system/
+open_source_project/
+
 ├── pages/
+
 │   ├── api/                  # API 라우트
+
 │   │   ├── stations.js       # 정류장 데이터 API
+
 │   │   └── predict.js        # 혼잡도 예측 API
+
 │   └── index.js              # 메인 페이지
+
 ├── public/                   # 정적 파일
+
 │   ├── bus.ico               # 파비콘
+
 │   └── daegu.png             # OG 이미지
+
 ├── styles/                   # 글로벌 스타일
+
 └── README.md                 # 이 파일
 # 🌟 기능 상세 설명
 1. 지도 서비스
@@ -100,17 +114,30 @@ OpenStreetMap 타일 레이어 사용
 
 # 📈 데이터 흐름도
 Diagram
+
 Code
+
 graph TD
+
     A[사용자 위치 요청] --> B{위치 정보 획득?}
+    
     B -->|성공| C[지도 중심점 설정]
+    
+    
     B -->|실패| D[기본 위치(대구대) 사용]
+    
     C --> E[주변 정류장 필터링]
+    
     D --> E
+    
     E --> F[마커 표시]
+    
     F --> G{정류장 클릭}
+    
     G --> H[API 요청]
+    
     H --> I[데이터 처리]
+    
     I --> J[모달에 정보 표시]
 # 📝 API 문서
 GET /api/stations
