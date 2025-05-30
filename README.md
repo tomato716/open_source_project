@@ -46,7 +46,7 @@ Custom API endpoints (/api/stations, /api/predict)
 # 🚀 시작하기
 설치 방법
 저장소 복제
-git clone https://github.com/your-username/bus-congestion-system.git
+git clone https://github.com/tomato716/open_source_project.git
 cd bus-congestion-system
 
 의존성 설치
@@ -144,17 +144,6 @@ json
   "congestion_level": "보통",
   "prediction_time": "2023-11-20T14:30:00"
 }
-# 🤝 복제 방법
-이 저장소를 포크하세요.
-
-새 브랜치 생성 (git checkout -b feature/your-feature)
-
-변경사항 커밋 (git commit -m 'Add some feature')
-
-브랜치에 푸시 (git push origin feature/your-feature)
-
-풀 리퀘스트 오픈
-
 # 📜 라이선스
 MIT License
 
