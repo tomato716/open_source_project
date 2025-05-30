@@ -40,13 +40,10 @@
 # 🛠 기술 스택
 Frontend
 
-<img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="50" height="15">
-
-<img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black" width="50" height="15">
-
-<img src="https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white" width="50" height="15">
-
-<img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chart.js&logoColor=white" width="50" height="15">
+<img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="50" height="20">
+<img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black" width="50" height="20">
+<img src="https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white" width="50" height="20">
+<img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chart.js&logoColor=white" width="50" height="20">
 APIs
 Geolocation API
 Custom API endpoints (/api/stations, /api/predict)
