@@ -1,4 +1,4 @@
-# 시각화
+# 프로젝트 미리보기
 ### chart.js
 <img src="https://github.com/user-attachments/assets/c1e4c1a8-0b1a-410f-8ce6-146d9a446a9b" width="400" height="250">
 <img src="https://github.com/user-attachments/assets/92e06e7c-7343-40bc-a75e-77295fc9ab8c" width="400" height="250">
@@ -38,14 +38,15 @@
 📱 반응형 디자인: 다양한 디바이스에서 최적화된 화면 제공
 
 # 🛠 기술 스택
-Frontend
-Next.js
-React
-Leaflet
-Chart.js
-APIs
-Geolocation API
-Custom API endpoints (/api/stations, /api/predict)
+Frontend                        
+<img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="65" height="20">                        
+<img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black" width="65" height="20">                        
+<img src="https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white" width="65" height="20">                        
+<img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chart.js&logoColor=white" width="65" height="20">                        
+
+APIs                        
+Geolocation API                        
+Custom API endpoints (/api/stations, /api/predict)                        
 
 # 🚀 시작하기
 설치 방법
@@ -67,43 +68,25 @@ npm run build
 npm start
 
 # 📂 프로젝트 구조
-open_source_project/
-
-├── data/
-
-│   └── data/bus_station_data.csv
-
-│   └── data/getOff_getOn_avg.csv
-
-├── lib/predictor.js
-
-├── pages/
-
-│   ├── api/              
-
-│   │   └── api/_document.js
-
-│   │   ├── stations.js    
-
-│   │   └── predict.js      
-
-│   └── index.js           
-             
-├── public/             
-
-│   ├── bus.ico           
-
-│   └── daegu.png           
-
-├── scripts/
-
-│   └── scripts/bus_station_pos.py
-
-│   └── scripts/getOff_getOn_preprocessor.py
-
-├── styles/                  
-
-└── README.md                
+open_source_project/                        
+├── data/                        
+│   └── data/bus_station_data.csv                        
+│   └── data/getOff_getOn_avg.csv                        
+├── lib/predictor.js                        
+├── pages/                        
+│   ├── api/                        
+│   │   └── api/_document.js                        
+│   │   ├── stations.js                        
+│   │   └── predict.js                        
+│   └── index.js                        
+├── public/                        
+│   ├── bus.ico                        
+│   └── daegu.png                        
+├── scripts/                        
+│   └── scripts/bus_station_pos.py                        
+│   └── scripts/getOff_getOn_preprocessor.py                        
+├── styles/                        
+└── README.md                        
 # 🌟 기능 상세 설명
 1. 지도 서비스
 OpenStreetMap 타일 레이어 사용
