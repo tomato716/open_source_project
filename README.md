@@ -1,4 +1,4 @@
-# 시각화
+# 프로젝트 미리보기
 ### chart.js
 <img src="https://github.com/user-attachments/assets/c1e4c1a8-0b1a-410f-8ce6-146d9a446a9b" width="400" height="250">
 <img src="https://github.com/user-attachments/assets/92e06e7c-7343-40bc-a75e-77295fc9ab8c" width="400" height="250">
