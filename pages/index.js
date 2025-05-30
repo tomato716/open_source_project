@@ -64,6 +64,7 @@ const getMarkerIcons = () => {
     violet: createCustomIcon("violet"),
     grey: createCustomIcon("grey"),
     black: createCustomIcon("black"),
+    gold: createCustomIcon("gold"),
   };
 };
 
@@ -234,7 +235,7 @@ export default function Home() {
       }
 
       const predictData = await predictRes.json();
-      setPredictData(predictData);
+      setPredictData(predictData || { congestion_level: "정보 없음" });
 
       // 시간대별 데이터 시뮬레이션 (실제 API가 없는 경우)
       const simulatedTimeData = {
