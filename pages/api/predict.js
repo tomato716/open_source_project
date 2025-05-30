@@ -1,13 +1,23 @@
 import { predictCongestion } from "@/lib/predictor";
 
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 export default function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "POST 요청만 허용됩니다." });
   }
 
-  const { station_id } = req.body;
+  console.log(">>> Headers:", req.headers);
+  console.log(">>> Body Raw:", req.body);
+
+  const { station_id } = req.body || {};
 
   if (!station_id) {
+    console.error("station_id가 undefined입니다.");
     return res.status(400).json({ error: "정류장 ID를 입력하세요." });
   }
 

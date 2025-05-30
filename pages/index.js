@@ -220,7 +220,9 @@ export default function Home() {
       const hour = now.getHours();
       setCurrentHour(hour);
 
-      const predictRes = await fetch("/api/predict", {
+      const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "";
+
+      const predictRes = await fetch(`${baseURL}/api/predict`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
