@@ -38,11 +38,17 @@
 📱 반응형 디자인: 다양한 디바이스에서 최적화된 화면 제공
 
 # 🛠 기술 스택
+Backend                        
+* <img src="https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white" width="65" height="20">                                                
+* <img src="https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white" width="65" height="20">                          
 Frontend                        
-<img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="65" height="20">                        
-<img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black" width="65" height="20">                        
-<img src="https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white" width="65" height="20">                        
-<img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chart.js&logoColor=white" width="65" height="20">                        
+* <img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white" width="65" height="20">                        
+* <img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black" width="65" height="20">                        
+* <img src="https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white" width="65" height="20">                        
+* <img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chart.js&logoColor=white" width="65" height="20">     
+데이터 처리                        
+* Pandas (Python)                        
+* Custom prediction algorithms (JavaScript)                        
 
 APIs                        
 Geolocation API                        
@@ -68,25 +74,31 @@ npm run build
 npm start
 
 # 📂 프로젝트 구조
-open_source_project/                        
-├── data/                        
-│   └── data/bus_station_data.csv                        
-│   └── data/getOff_getOn_avg.csv                        
-├── lib/predictor.js                        
-├── pages/                        
-│   ├── api/                        
-│   │   └── api/_document.js                        
-│   │   ├── stations.js                        
-│   │   └── predict.js                        
-│   └── index.js                        
-├── public/                        
-│   ├── bus.ico                        
-│   └── daegu.png                        
-├── scripts/                        
-│   └── scripts/bus_station_pos.py                        
-│   └── scripts/getOff_getOn_preprocessor.py                        
-├── styles/                        
-└── README.md                        
+open_source_project/
+├── data/                          # 모든 데이터 파일
+│   ├── bus_station_data.csv       # 정류장 위치 데이터
+│   └── getOff_getOn_avg.csv       # 승하차 평균 데이터
+│
+├── lib/                           # 공유 라이브러리
+│   └── predictor.js               # 혼잡도 예측 알고리즘
+│
+├── pages/                         # Next.js 페이지
+│   ├── api/                       # API 엔드포인트
+│   │   ├── _document.js           # API 공통 설정
+│   │   ├── stations.js            # 정류장 데이터 API
+│   │   └── predict.js             # 혼잡도 예측 API
+│   └── index.js                   # 메인 페이지
+│
+├── public/                        # 정적 파일
+│   ├── bus.ico                    # 파비콘
+│   └── daegu.png                  # OG 이미지
+│
+├── scripts/                       # 데이터 처리 스크립트
+│   ├── bus_station_pos.py         # 정류장 위치 처리
+│   └── getOff_getOn_preprocessor.py # 승하차 데이터 전처리
+│
+├── styles/                        # CSS 스타일
+└── README.md                      # 프로젝트 문서           
 # 🌟 기능 상세 설명
 1. 지도 서비스
 OpenStreetMap 타일 레이어 사용
