@@ -45,7 +45,9 @@ Frontend
 <img src="https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white" width="65" height="20">
 <img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chart.js&logoColor=white" width="65" height="20">
 APIs
+
 Geolocation API
+
 Custom API endpoints (/api/stations, /api/predict)
 
 # 🚀 시작하기
